@@ -2340,7 +2340,7 @@
       const a = document.getElementById("custAddress"); if (a) a.value = "";
     };
 
-    // Mark sold-out cards/list-items after every render
+    // Mark sold-out cards/list-items after every render and disable add buttons
     function tagSoldOut() {
       const all = [...Object.values(window.products||{}).flat(), ...(window.availableToday||[])];
       const map = new Map(all.map(p => [p.id, p.soldOut]));
@@ -2348,9 +2348,33 @@
         const minus = el.querySelector(".step-btn.minus");
         const m = minus?.getAttribute("onclick")?.match(/'([^']+)'/);
         const id = m?.[1];
-        if (id && map.get(id)) el.classList.add("sold-out");
+        if (!id) return;
+        if (map.get(id)) {
+          el.classList.add("sold-out");
+          el.querySelectorAll(".step-btn.plus").forEach(b => {
+            b.setAttribute("disabled", "true");
+            b.style.opacity = ".4";
+            b.style.cursor = "not-allowed";
+            b.style.pointerEvents = "none";
+          });
+        } else {
+          el.classList.remove("sold-out");
+          el.querySelectorAll(".step-btn.plus").forEach(b => {
+            b.removeAttribute("disabled");
+            b.style.opacity = "";
+            b.style.cursor = "";
+            b.style.pointerEvents = "";
+          });
+        }
       });
+      // Prune any sold-out items already in the cart
+      if (window.cart && window.cart.length) {
+        const before = window.cart.length;
+        window.cart = window.cart.filter(c => !map.get(c.id));
+        if (window.cart.length !== before) window.renderCart?.();
+      }
     }
+
     const obs = new MutationObserver(() => tagSoldOut());
     document.addEventListener("DOMContentLoaded", () => {
       obs.observe(document.body, { childList: true, subtree: true });
