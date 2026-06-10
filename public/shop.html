@@ -1940,6 +1940,10 @@
     // ================= STATE =================
     let cart = [];
     let currentPage = 'home';
+    // Expose mutable state to the module script (Supabase loader + checkout)
+    window.products = products;
+    window.availableToday = availableToday;
+    Object.defineProperty(window, 'cart', { get: () => cart, set: v => { cart = v; } });
 
     // ================= INIT =================
     document.addEventListener('DOMContentLoaded', () => {
