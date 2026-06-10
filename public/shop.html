@@ -2032,6 +2032,11 @@
       const product = allProducts.find(p => p.id === id);
       if (!product) return;
 
+      if (delta > 0 && product.soldOut) {
+        showToast(`${product.name} is sold out`);
+        return;
+      }
+
       const existing = cart.find(c => c.id === id);
       if (existing) {
         existing.qty += delta;
@@ -2046,6 +2051,7 @@
       renderCart();
       showToast(delta > 0 ? `Added ${product.name} to cart` : `Removed ${product.name}`);
     }
+
 
     function removeFromCart(id) {
       cart = cart.filter(c => c.id !== id);
