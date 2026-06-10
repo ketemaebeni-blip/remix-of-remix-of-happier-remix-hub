@@ -1989,6 +1989,7 @@
     window.addEventListener('resize', updateNavIndicator);
 
     function openCategory(cat) {
+      window.currentCat = cat;
       const meta = categoryMeta[cat];
       document.getElementById('detailHeroBg').src = meta.img;
       document.getElementById('detailHeroFloat').src = meta.img;
