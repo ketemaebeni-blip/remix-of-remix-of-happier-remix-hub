@@ -1884,49 +1884,14 @@
 
   <script>
     // ================= DATA =================
+    // Products are loaded from the database (shop_items table). Admins manage all items
+    // from /admin — what they add/edit/delete/toggle there is exactly what shows here.
     let products = {
-      fasting: [
-        { id: 'f1', name: 'Vegan Chocolate', price: 35, sub: 'Rich cocoa, almond milk, coconut cream', img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop' },
-        { id: 'f2', name: 'Tropical Fruit', price: 32, sub: 'Mango, passion fruit, coconut layers', img: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400&h=300&fit=crop' },
-        { id: 'f3', name: 'Carrot Walnut', price: 38, sub: 'Spiced carrot, walnut, orange glaze', img: 'https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=400&h=300&fit=crop' },
-        { id: 'f4', name: 'Lemon Poppy', price: 34, sub: 'Zesty lemon, poppy seed, vegan buttercream', img: 'https://images.unsplash.com/photo-1519340333755-56e9c1d04579?w=400&h=300&fit=crop' },
-      ],
-      kerestena: [
-        { id: 'k1', name: 'Holy Cross', price: 45, sub: 'White fondant, gold accents, vanilla sponge', img: 'https://images.unsplash.com/photo-1535141192574-5d4897c12636?w=400&h=300&fit=crop' },
-        { id: 'k2', name: 'Angel Wings', price: 48, sub: 'Buttercream, edible pearls, light sponge', img: 'https://images.unsplash.com/photo-1627834377411-8da5f4f09de8?w=400&h=300&fit=crop' },
-        { id: 'k3', name: 'Blessed Day', price: 42, sub: 'Lemon drizzle, white chocolate, fresh berries', img: 'https://images.unsplash.com/photo-1571115177098-24ec42ed204d?w=400&h=300&fit=crop' },
-      ],
-      yeshemgelena: [
-        { id: 'y1', name: 'Baby Blue', price: 40, sub: 'Blue ombre, teddy topper, vanilla bean', img: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400&h=300&fit=crop' },
-        { id: 'y2', name: 'Pretty in Pink', price: 40, sub: 'Pink ruffles, flower crown, strawberry', img: 'https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=400&h=300&fit=crop' },
-        { id: 'y3', name: 'Gender Reveal', price: 45, sub: 'Surprise inside, neutral outside', img: 'https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=400&h=300&fit=crop' },
-      ],
-      graduation: [
-        { id: 'g1', name: 'Cap & Scroll', price: 55, sub: 'Black fondant, gold details, chocolate', img: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&h=300&fit=crop' },
-        { id: 'g2', name: 'Future Ahead', price: 52, sub: 'Modern design, motivational quote, red velvet', img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop' },
-        { id: 'g3', name: 'Class of 2026', price: 50, sub: 'Custom year, school colors, vanilla', img: 'https://images.unsplash.com/photo-1621303837174-89787a7d4729?w=400&h=300&fit=crop' },
-      ],
-      wedding: [
-        { id: 'w1', name: 'Elegant Tier', price: 120, sub: 'Three-tier, white fondant, sugar roses', img: 'https://images.unsplash.com/photo-1535254973040-607b474cb50d?w=400&h=300&fit=crop' },
-        { id: 'w2', name: 'Rustic Charm', price: 95, sub: 'Naked cake, fresh flowers, vanilla', img: 'https://images.unsplash.com/photo-1525253086316-d0c936c814f8?w=400&h=300&fit=crop' },
-        { id: 'w3', name: 'Golden Love', price: 150, sub: 'Gold leaf, champagne sponge, berries', img: 'https://images.unsplash.com/photo-1627834377411-8da5f4f09de8?w=400&h=300&fit=crop' },
-      ],
-      birthday: [
-        { id: 'b1', name: 'Classic Vanilla', price: 35, sub: 'Vanilla sponge, buttercream, sprinkles', img: 'https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=400&h=300&fit=crop' },
-        { id: 'b2', name: 'Chocolate Dream', price: 38, sub: 'Double chocolate, ganache, truffles', img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop' },
-        { id: 'b3', name: 'Rainbow Fun', price: 42, sub: 'Six layers, cream cheese, colorful', img: 'https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=400&h=300&fit=crop' },
-        { id: 'b4', name: 'Unicorn Magic', price: 45, sub: 'Pastel colors, horn topper, vanilla', img: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400&h=300&fit=crop' },
-      ]
+      fasting: [], kerestena: [], yeshemgelena: [],
+      graduation: [], wedding: [], birthday: [],
     };
 
-    let availableToday = [
-      { id: 'a1', name: 'Cupcake Box (6)', price: 18, sub: 'Assorted flavors, daily fresh', img: 'https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?w=400&h=300&fit=crop' },
-      { id: 'a2', name: 'Croissant', price: 4, sub: 'Butter croissant, flaky layers', img: 'https://images.unsplash.com/photo-1555507036-ab1f4038028a?w=400&h=300&fit=crop' },
-      { id: 'a3', name: 'Tiramisu Slice', price: 8, sub: 'Coffee, mascarpone, cocoa', img: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&h=300&fit=crop' },
-      { id: 'a4', name: 'Cheesecake', price: 7, sub: 'New York style, berry compote', img: 'https://images.unsplash.com/photo-1524351199678-941a58a3df26?w=400&h=300&fit=crop' },
-      { id: 'a5', name: 'Macaron Box', price: 15, sub: '6 pieces, assorted flavors', img: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=400&h=300&fit=crop' },
-      { id: 'a6', name: 'Fruit Tart', price: 6, sub: 'Fresh seasonal fruits, custard', img: 'https://images.unsplash.com/photo-1519915028121-7d3463d20b13?w=400&h=300&fit=crop' },
-    ];
+    let availableToday = [];
 
     const categoryMeta = {
       fasting: { title: 'Fasting Cakes', sub: 'Plant-based & vegan-friendly', badge: 'Vegan', img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=800&h=600&fit=crop' },
