@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { setCakeAvailability } from "@/lib/cake-admin.functions";
 
 /** Hardcoded manager account — only this email is granted admin role on signup. */
-export const ADMIN_EMAIL = "owner@selamcake.com";
+export const ADMIN_EMAIL = "admin@selamcake.com";
 
 /**
  * Subscribe to the cake_availability table (live).
