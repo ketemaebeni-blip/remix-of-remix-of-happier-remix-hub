@@ -2309,7 +2309,9 @@
         for (const k of Object.keys(grouped)) window.products[k] = grouped[k];
         if (todays.length) { window.availableToday.length = 0; window.availableToday.push(...todays); }
         // Re-render any currently open list view
+        // Re-render whichever list/detail view is currently open so toggles reflect immediately.
         if (document.getElementById("page-available")?.classList.contains("active")) window.openAvailableToday?.();
+        if (document.getElementById("page-detail")?.classList.contains("active") && window.currentCat) window.openCategory?.(window.currentCat);
       } catch (err) { console.error("Shop items load failed", err); }
     }
 
