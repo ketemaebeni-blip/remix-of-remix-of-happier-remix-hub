@@ -2032,6 +2032,11 @@
       const product = allProducts.find(p => p.id === id);
       if (!product) return;
 
+      if (delta > 0 && product.soldOut) {
+        showToast(`${product.name} is sold out`);
+        return;
+      }
+
       const existing = cart.find(c => c.id === id);
       if (existing) {
         existing.qty += delta;
@@ -2046,6 +2051,7 @@
       renderCart();
       showToast(delta > 0 ? `Added ${product.name} to cart` : `Removed ${product.name}`);
     }
+
 
     function removeFromCart(id) {
       cart = cart.filter(c => c.id !== id);
@@ -2288,10 +2294,21 @@
     const TELEGRAM_USERNAME = "selamina22";
     window.checkout = async function checkout() {
       if (!window.cart || window.cart.length === 0) return;
+      // Block checkout if any cart item is sold out
+      const allProducts = [...Object.values(window.products||{}).flat(), ...(window.availableToday||[])];
+      const soldMap = new Map(allProducts.map(p => [p.id, p.soldOut]));
+      const blocked = window.cart.filter(c => soldMap.get(c.id));
+      if (blocked.length) {
+        showToast(`${blocked[0].name} is sold out — removed from cart`);
+        window.cart = window.cart.filter(c => !soldMap.get(c.id));
+        window.renderCart?.();
+        return;
+      }
       const name = (document.getElementById("custName")?.value || "").trim();
       const phone = (document.getElementById("custPhone")?.value || "").trim();
       const address = (document.getElementById("custAddress")?.value || "").trim();
       if (!name || !phone) { showToast("Please enter name and phone"); return; }
+
       const items = window.cart.map(c => ({
         name: String(c.name), qty: Number(c.qty), price: Number(c.price),
         img: c.img && /^https:\/\//.test(c.img) ? c.img : null,
@@ -2334,7 +2351,7 @@
       const a = document.getElementById("custAddress"); if (a) a.value = "";
     };
 
-    // Mark sold-out cards/list-items after every render
+    // Mark sold-out cards/list-items after every render and disable add buttons
     function tagSoldOut() {
       const all = [...Object.values(window.products||{}).flat(), ...(window.availableToday||[])];
       const map = new Map(all.map(p => [p.id, p.soldOut]));
@@ -2342,9 +2359,33 @@
         const minus = el.querySelector(".step-btn.minus");
         const m = minus?.getAttribute("onclick")?.match(/'([^']+)'/);
         const id = m?.[1];
-        if (id && map.get(id)) el.classList.add("sold-out");
+        if (!id) return;
+        if (map.get(id)) {
+          el.classList.add("sold-out");
+          el.querySelectorAll(".step-btn.plus").forEach(b => {
+            b.setAttribute("disabled", "true");
+            b.style.opacity = ".4";
+            b.style.cursor = "not-allowed";
+            b.style.pointerEvents = "none";
+          });
+        } else {
+          el.classList.remove("sold-out");
+          el.querySelectorAll(".step-btn.plus").forEach(b => {
+            b.removeAttribute("disabled");
+            b.style.opacity = "";
+            b.style.cursor = "";
+            b.style.pointerEvents = "";
+          });
+        }
       });
+      // Prune any sold-out items already in the cart
+      if (window.cart && window.cart.length) {
+        const before = window.cart.length;
+        window.cart = window.cart.filter(c => !map.get(c.id));
+        if (window.cart.length !== before) window.renderCart?.();
+      }
     }
+
     const obs = new MutationObserver(() => tagSoldOut());
     document.addEventListener("DOMContentLoaded", () => {
       obs.observe(document.body, { childList: true, subtree: true });
