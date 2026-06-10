@@ -2294,10 +2294,21 @@
     const TELEGRAM_USERNAME = "selamina22";
     window.checkout = async function checkout() {
       if (!window.cart || window.cart.length === 0) return;
+      // Block checkout if any cart item is sold out
+      const allProducts = [...Object.values(window.products||{}).flat(), ...(window.availableToday||[])];
+      const soldMap = new Map(allProducts.map(p => [p.id, p.soldOut]));
+      const blocked = window.cart.filter(c => soldMap.get(c.id));
+      if (blocked.length) {
+        showToast(`${blocked[0].name} is sold out — removed from cart`);
+        window.cart = window.cart.filter(c => !soldMap.get(c.id));
+        window.renderCart?.();
+        return;
+      }
       const name = (document.getElementById("custName")?.value || "").trim();
       const phone = (document.getElementById("custPhone")?.value || "").trim();
       const address = (document.getElementById("custAddress")?.value || "").trim();
       if (!name || !phone) { showToast("Please enter name and phone"); return; }
+
       const items = window.cart.map(c => ({
         name: String(c.name), qty: Number(c.qty), price: Number(c.price),
         img: c.img && /^https:\/\//.test(c.img) ? c.img : null,
