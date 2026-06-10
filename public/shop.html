@@ -331,6 +331,29 @@
       padding: 100px 14px 14px;
       text-align: left;
     }
+    .product-card.sold-out { opacity: .55; filter: grayscale(.35); }
+    .product-card.sold-out::after {
+      content: "Sold Out";
+      position: absolute; top: 10px; right: 10px;
+      background: var(--choc); color: #fff;
+      font-size: .65rem; font-weight: 800; letter-spacing: .04em;
+      padding: 4px 10px; border-radius: 999px; z-index: 11;
+    }
+    .product-list-item.sold-out { opacity: .55; filter: grayscale(.35); }
+    .product-list-item.sold-out::after {
+      content: "Sold Out";
+      position: absolute; top: 8px; right: 10px;
+      background: var(--choc); color: #fff;
+      font-size: .6rem; font-weight: 800;
+      padding: 3px 8px; border-radius: 999px;
+    }
+    .cust-input {
+      width: 100%; padding: 10px 12px; margin-bottom: 8px;
+      border-radius: 12px; border: 1px solid rgba(240,184,174,.5);
+      font-size: .85rem; font-family: inherit; background: var(--cream); color: var(--choc);
+      box-sizing: border-box;
+    }
+    .cust-input:focus { outline: none; border-color: var(--choc-mid); }
 
     .product-card-name {
       font-size: .85rem;
@@ -1363,6 +1386,7 @@
         padding: 12px 32px 28px;
       }
       .product-card-img { height: 150px; }
+      .product-card-body { padding-top: 140px; }
       .bottom-nav { max-width: 520px; padding-bottom: calc(18px + var(--safe-bottom)); }
       .sheet-panel { max-width: 560px; border-radius: 28px; max-height: 82dvh; margin-bottom: 24px; }
       .sheet-overlay { align-items: center; }
@@ -1379,6 +1403,7 @@
         padding: 16px 44px 32px;
       }
       .product-card-img { height: 170px; }
+      .product-card-body { padding-top: 160px; }
       .bottom-nav { max-width: 600px; }
       .sheet-panel { max-width: 640px; }
     }
@@ -1391,6 +1416,7 @@
         padding: 20px 56px 36px;
       }
       .product-card-img { height: 190px; }
+      .product-card-body { padding-top: 180px; }
     }
   </style>
   <base target="_blank">
@@ -1786,6 +1812,9 @@
         <div class="sheet-scroll" id="cartItems">
         </div>
         <div class="sheet-footer" id="cartFooter">
+          <input id="custName" class="cust-input" placeholder="Your name" autocomplete="name" />
+          <input id="custPhone" class="cust-input" placeholder="Phone (e.g. +2519...)" autocomplete="tel" />
+          <input id="custAddress" class="cust-input" placeholder="Delivery address (optional)" autocomplete="street-address" />
           <div class="delivery-row">
             <div style="display:flex;align-items:center;gap:8px;">
               <i data-lucide="truck" style="width:16px;height:16px;color:var(--choc-mid);stroke-width:2;"></i>
@@ -1855,7 +1884,7 @@
 
   <script>
     // ================= DATA =================
-    const products = {
+    let products = {
       fasting: [
         { id: 'f1', name: 'Vegan Chocolate', price: 35, sub: 'Rich cocoa, almond milk, coconut cream', img: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop' },
         { id: 'f2', name: 'Tropical Fruit', price: 32, sub: 'Mango, passion fruit, coconut layers', img: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400&h=300&fit=crop' },
@@ -1890,7 +1919,7 @@
       ]
     };
 
-    const availableToday = [
+    let availableToday = [
       { id: 'a1', name: 'Cupcake Box (6)', price: 18, sub: 'Assorted flavors, daily fresh', img: 'https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?w=400&h=300&fit=crop' },
       { id: 'a2', name: 'Croissant', price: 4, sub: 'Butter croissant, flaky layers', img: 'https://images.unsplash.com/photo-1555507036-ab1f4038028a?w=400&h=300&fit=crop' },
       { id: 'a3', name: 'Tiramisu Slice', price: 8, sub: 'Coffee, mascarpone, cocoa', img: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&h=300&fit=crop' },
@@ -1911,6 +1940,10 @@
     // ================= STATE =================
     let cart = [];
     let currentPage = 'home';
+    // Expose mutable state to the module script (Supabase loader + checkout)
+    window.products = products;
+    window.availableToday = availableToday;
+    Object.defineProperty(window, 'cart', { get: () => cart, set: v => { cart = v; } });
 
     // ================= INIT =================
     document.addEventListener('DOMContentLoaded', () => {
@@ -2236,6 +2269,108 @@
       else if (document.getElementById('page-available').classList.contains('active')) { closeAvailable(); history.pushState(null, ''); }
     });
     history.pushState(null, '');
+  </script>
+
+  <!-- BACKEND INTEGRATION: load items from Supabase + place real orders via /api/public/orders + Telegram -->
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+    const SUPABASE_URL = "https://fjooffwprwtjbnlkeyyj.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqb29mZndwcnd0amJubGtleXlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNTMyOTQsImV4cCI6MjA5NjYyOTI5NH0.0R1jGJfQiYfjJmefdRS2vSbeHVP2f556LHyrdNYm2qc";
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    const CAT_KEY = {
+      "Fasting": "fasting", "Kerestena": "kerestena", "Yeshemgelena": "yeshemgelena",
+      "Graduation": "graduation", "Wedding": "wedding", "Birthday": "birthday",
+    };
+
+    async function loadItems() {
+      try {
+        const [{ data: items, error: e1 }, { data: avail, error: e2 }] = await Promise.all([
+          sb.from("shop_items").select("id,name,sub,cat,price,img,available,sort_order").order("sort_order",{ascending:true}),
+          sb.from("shop_item_availability").select("item_id,available"),
+        ]);
+        if (e1) { console.error(e1); return; }
+        const outIds = new Set((avail ?? []).filter(r => r.available === false).map(r => r.item_id));
+        const grouped = {};
+        const todays = [];
+        for (const it of (items ?? [])) {
+          const row = {
+            id: it.id, name: it.name, sub: it.sub || "",
+            price: Number(it.price), img: it.img,
+            soldOut: !it.available || outIds.has(it.id),
+          };
+          if (it.cat === "Available Today") { todays.push(row); continue; }
+          const key = CAT_KEY[it.cat];
+          if (!key) continue;
+          (grouped[key] ||= []).push(row);
+        }
+        // Only overwrite categories that came back with items, preserving fallback for empties.
+        for (const k of Object.keys(grouped)) window.products[k] = grouped[k];
+        if (todays.length) { window.availableToday.length = 0; window.availableToday.push(...todays); }
+        // Re-render any currently open list view
+        if (document.getElementById("page-available")?.classList.contains("active")) window.openAvailableToday?.();
+      } catch (err) { console.error("Shop items load failed", err); }
+    }
+
+    // Patch renderers to add a sold-out class on the card/list item
+    const origUpdate = window.updateCart;
+    function showToast(msg){ const t=document.getElementById('toast'); if(!t) return; t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+    // Real checkout: POST to /api/public/orders
+    window.checkout = async function checkout() {
+      if (!window.cart || window.cart.length === 0) return;
+      const name = (document.getElementById("custName")?.value || "").trim();
+      const phone = (document.getElementById("custPhone")?.value || "").trim();
+      const address = (document.getElementById("custAddress")?.value || "").trim();
+      if (!name || !phone) { showToast("Please enter name and phone"); return; }
+      const items = window.cart.map(c => ({
+        name: String(c.name), qty: Number(c.qty), price: Number(c.price),
+        img: c.img && /^https:\/\//.test(c.img) ? c.img : null,
+      }));
+      const total = items.reduce((s,i)=>s+i.price*i.qty,0);
+      showToast("Sending order…");
+      try {
+        const res = await fetch("/api/public/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ customer_name:name, customer_phone:phone, customer_address:address, items, total }),
+        });
+        const json = await res.json().catch(()=>({}));
+        if (!res.ok || json.error) { showToast("Order failed. Try again."); console.error(json); return; }
+        showToast("Order placed! We'll contact you shortly.");
+        window.cart = [];
+        window.renderCart?.();
+        window.closeCart?.();
+        document.getElementById("custName").value = "";
+        document.getElementById("custPhone").value = "";
+        document.getElementById("custAddress").value = "";
+      } catch (err) {
+        console.error(err); showToast("Network error. Try again.");
+      }
+    };
+
+    // Mark sold-out cards/list-items after every render
+    function tagSoldOut() {
+      const all = [...Object.values(window.products||{}).flat(), ...(window.availableToday||[])];
+      const map = new Map(all.map(p => [p.id, p.soldOut]));
+      document.querySelectorAll(".product-card, .product-list-item").forEach(el => {
+        const minus = el.querySelector(".step-btn.minus");
+        const m = minus?.getAttribute("onclick")?.match(/'([^']+)'/);
+        const id = m?.[1];
+        if (id && map.get(id)) el.classList.add("sold-out");
+      });
+    }
+    const obs = new MutationObserver(() => tagSoldOut());
+    document.addEventListener("DOMContentLoaded", () => {
+      obs.observe(document.body, { childList: true, subtree: true });
+      loadItems();
+    });
+
+    // Live updates when admin toggles availability or edits items
+    sb.channel("shop_live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "shop_items" }, loadItems)
+      .on("postgres_changes", { event: "*", schema: "public", table: "shop_item_availability" }, loadItems)
+      .subscribe();
   </script>
 </body>
 </html>
