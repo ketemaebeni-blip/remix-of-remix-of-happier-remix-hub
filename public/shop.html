@@ -1011,28 +1011,31 @@
 
     .sheet-overlay.show .sheet-panel { transform: translateY(0); }
 
-    /* CART centered modal override */
+    /* CART centered modal */
     #cartSheet {
       align-items: center;
+      justify-content: center;
       padding: 16px;
-      background: rgba(46, 21, 3, .55);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      z-index: 250;
+      background: rgba(46, 21, 3, .62);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      z-index: 9999;
     }
     #cartSheet .sheet-panel {
+      width: 100%;
       max-width: 440px;
       max-height: 86dvh;
-      border-radius: 26px;
+      border-radius: 28px;
       transform: translateY(20px) scale(.96);
       opacity: 0;
       transition: transform .35s cubic-bezier(.22,1,.36,1), opacity .25s ease;
-      box-shadow: 0 30px 80px rgba(46, 21, 3, .35);
+      box-shadow: 0 30px 80px rgba(46, 21, 3, .45), 0 6px 24px rgba(46,21,3,.25);
+      border: 1px solid rgba(255,255,255,.5);
     }
     #cartSheet.show .sheet-panel { transform: translateY(0) scale(1); opacity: 1; }
     #cartSheet .sheet-handle-wrap { display: none; }
     #cartSheet .sheet-head { padding-top: 22px; }
-    @media (min-width: 768px) { #cartSheet .sheet-panel { max-width: 480px; } }
+    @media (min-width: 768px) { #cartSheet .sheet-panel { max-width: 460px; } }
 
     .sheet-handle-wrap {
       padding: 12px 0 0;
