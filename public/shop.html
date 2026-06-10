@@ -331,6 +331,29 @@
       padding: 100px 14px 14px;
       text-align: left;
     }
+    .product-card.sold-out { opacity: .55; filter: grayscale(.35); }
+    .product-card.sold-out::after {
+      content: "Sold Out";
+      position: absolute; top: 10px; right: 10px;
+      background: var(--choc); color: #fff;
+      font-size: .65rem; font-weight: 800; letter-spacing: .04em;
+      padding: 4px 10px; border-radius: 999px; z-index: 11;
+    }
+    .product-list-item.sold-out { opacity: .55; filter: grayscale(.35); }
+    .product-list-item.sold-out::after {
+      content: "Sold Out";
+      position: absolute; top: 8px; right: 10px;
+      background: var(--choc); color: #fff;
+      font-size: .6rem; font-weight: 800;
+      padding: 3px 8px; border-radius: 999px;
+    }
+    .cust-input {
+      width: 100%; padding: 10px 12px; margin-bottom: 8px;
+      border-radius: 12px; border: 1px solid rgba(240,184,174,.5);
+      font-size: .85rem; font-family: inherit; background: var(--cream); color: var(--choc);
+      box-sizing: border-box;
+    }
+    .cust-input:focus { outline: none; border-color: var(--choc-mid); }
 
     .product-card-name {
       font-size: .85rem;
