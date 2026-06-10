@@ -330,7 +330,7 @@
       #app { max-width: 1200px; }
     }
     /* Ensure last row content clears the floating bottom nav */
-    .page { padding-bottom: 140px; }
+    .page { padding-bottom: 160px; }
 
     /* TOPBAR */
     .topbar {
@@ -348,29 +348,36 @@
       padding: 0 18px;
     }
 
-    /* BOTTOM NAV — always-visible floating pill */
+    /* BOTTOM NAV — floating glassmorphic pill (mobile / tablet / desktop) */
     .bottom-nav {
       position: fixed;
-      bottom: 0;
+      bottom: 14px;
       left: 50%;
       transform: translateX(-50%);
-      width: 100%;
-      max-width: 460px;
-      z-index: 150;
-      padding: 12px 18px calc(18px + var(--safe-bottom));
+      width: calc(100% - 24px);
+      max-width: 440px;
+      z-index: 200;
+      padding: 0 0 var(--safe-bottom);
       background: transparent;
       pointer-events: none;
     }
-
+    @media (min-width: 768px) { .bottom-nav { max-width: 480px; bottom: 20px; } }
+    @media (min-width: 1024px) { .bottom-nav { max-width: 520px; } }
 
     .nav-pill-bar {
       display: flex;
       align-items: center;
       justify-content: space-around;
-      background: var(--choc);
+      background: linear-gradient(135deg, rgba(46,21,3,.88) 0%, rgba(46,21,3,.78) 100%);
+      backdrop-filter: blur(22px) saturate(140%);
+      -webkit-backdrop-filter: blur(22px) saturate(140%);
+      border: 1px solid rgba(255,255,255,.10);
       border-radius: 28px;
       padding: 10px 16px;
-      box-shadow: 0 8px 32px rgba(46, 21, 3, .28), 0 2px 8px rgba(46, 21, 3, .16);
+      box-shadow:
+        0 12px 40px rgba(46, 21, 3, .35),
+        0 4px 14px rgba(46, 21, 3, .22),
+        inset 0 1px 0 rgba(255,255,255,.08);
       pointer-events: all;
       height: 64px;
     }
@@ -472,7 +479,7 @@
     .page { display: none; }
     .page.active {
       display: block;
-      padding-bottom: calc(var(--nav-h) + 24px + var(--safe-bottom));
+      padding-bottom: calc(120px + var(--safe-bottom));
     }
 
     /* ANIMATIONS */
@@ -679,12 +686,17 @@
     .card-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 22px 16px;
+      gap: 24px 16px;
       padding-top: 8px;
+      width: 100%;
+      max-width: 1200px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    @media (min-width: 520px) { .card-grid { grid-template-columns: repeat(2, 1fr); gap: 28px 16px; } }
-    @media (min-width: 900px) { .card-grid { grid-template-columns: repeat(3, 1fr); gap: 32px 20px; } }
-    @media (min-width: 1200px) { .card-grid { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 640px) { .card-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 28px 18px; } }
+    @media (min-width: 1024px) { .card-grid { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 32px 22px; } }
+    @media (min-width: 1280px) { .card-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
+    .card-grid img { width: 100%; height: 100%; object-fit: cover; }
 
     .product-card {
       background: var(--white);
@@ -1004,28 +1016,31 @@
 
     .sheet-overlay.show .sheet-panel { transform: translateY(0); }
 
-    /* CART centered modal override */
+    /* CART centered modal */
     #cartSheet {
       align-items: center;
+      justify-content: center;
       padding: 16px;
-      background: rgba(46, 21, 3, .55);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      z-index: 250;
+      background: rgba(46, 21, 3, .62);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      z-index: 9999;
     }
     #cartSheet .sheet-panel {
+      width: 100%;
       max-width: 440px;
       max-height: 86dvh;
-      border-radius: 26px;
+      border-radius: 28px;
       transform: translateY(20px) scale(.96);
       opacity: 0;
       transition: transform .35s cubic-bezier(.22,1,.36,1), opacity .25s ease;
-      box-shadow: 0 30px 80px rgba(46, 21, 3, .35);
+      box-shadow: 0 30px 80px rgba(46, 21, 3, .45), 0 6px 24px rgba(46,21,3,.25);
+      border: 1px solid rgba(255,255,255,.5);
     }
     #cartSheet.show .sheet-panel { transform: translateY(0) scale(1); opacity: 1; }
     #cartSheet .sheet-handle-wrap { display: none; }
     #cartSheet .sheet-head { padding-top: 22px; }
-    @media (min-width: 768px) { #cartSheet .sheet-panel { max-width: 480px; } }
+    @media (min-width: 768px) { #cartSheet .sheet-panel { max-width: 460px; } }
 
     .sheet-handle-wrap {
       padding: 12px 0 0;
@@ -1713,9 +1728,9 @@
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
             <h2 style="font-size:1.2rem;font-weight:800;color:var(--choc);">Your Cart</h2>
             <button onclick="closeCart()" aria-label="Close cart"
-              style="width:32px;height:32px;border-radius:50%;background:var(--blush);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;"
-              onmouseover="this.style.background='var(--blush-dark)'" onmouseout="this.style.background='var(--blush)'">
-              <i data-lucide="x" style="width:14px;height:14px;color:var(--choc);stroke-width:2.5;"></i>
+              style="width:42px;height:42px;border-radius:50%;background:var(--blush);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s, transform .2s;box-shadow:0 2px 8px rgba(46,21,3,.15);"
+              onmouseover="this.style.background='var(--blush-dark)';this.style.transform='scale(1.06)'" onmouseout="this.style.background='var(--blush)';this.style.transform=''">
+              <i data-lucide="x" style="width:18px;height:18px;color:var(--choc);stroke-width:2.5;"></i>
             </button>
           </div>
           <p style="font-size:.76rem;color:var(--muted);">Review before placing your order</p>
