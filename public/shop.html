@@ -2319,7 +2319,8 @@
     const origUpdate = window.updateCart;
     function showToast(msg){ const t=document.getElementById('toast'); if(!t) return; t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
-    // Real checkout: POST to /api/public/orders
+    // Real checkout: save to DB, then open Telegram chat with @selamina22 pre-filled.
+    const TELEGRAM_USERNAME = "selamina22";
     window.checkout = async function checkout() {
       if (!window.cart || window.cart.length === 0) return;
       const name = (document.getElementById("custName")?.value || "").trim();
@@ -2331,25 +2332,41 @@
         img: c.img && /^https:\/\//.test(c.img) ? c.img : null,
       }));
       const total = items.reduce((s,i)=>s+i.price*i.qty,0);
-      showToast("Sending order…");
-      try {
-        const res = await fetch("/api/public/orders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ customer_name:name, customer_phone:phone, customer_address:address, items, total }),
-        });
-        const json = await res.json().catch(()=>({}));
-        if (!res.ok || json.error) { showToast("Order failed. Try again."); console.error(json); return; }
-        showToast("Order placed! We'll contact you shortly.");
-        window.cart = [];
-        window.renderCart?.();
-        window.closeCart?.();
-        document.getElementById("custName").value = "";
-        document.getElementById("custPhone").value = "";
-        document.getElementById("custAddress").value = "";
-      } catch (err) {
-        console.error(err); showToast("Network error. Try again.");
-      }
+
+      // Build the Telegram message
+      const lines = [
+        "🌸 Selam Cake & Arts — New Order",
+        "",
+        `👤 Name: ${name}`,
+        `📞 Phone: ${phone}`,
+      ];
+      if (address) lines.push(`📍 Address: ${address}`);
+      lines.push("", "🧁 Items:");
+      items.forEach(it => lines.push(`• ${it.name} × ${it.qty} — ETB ${it.price * it.qty}`));
+      lines.push("", `💰 Total: ETB ${total}`);
+      const text = lines.join("\n");
+
+      // Save to database in the background (best-effort, don't block the user)
+      fetch("/api/public/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customer_name:name, customer_phone:phone, customer_address:address, items, total }),
+      }).catch(err => console.error("Order save failed", err));
+
+      showToast("Opening Telegram… tap Send to confirm your order");
+
+      // Open Telegram chat with the message pre-filled.
+      // tg:// deep-links to the installed app; t.me share fallback opens browser/web.
+      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent("https://t.me/" + TELEGRAM_USERNAME)}&text=${encodeURIComponent(text)}`;
+      window.open(shareUrl, "_blank");
+
+      // Clear cart locally
+      window.cart = [];
+      window.renderCart?.();
+      window.closeCart?.();
+      const n = document.getElementById("custName"); if (n) n.value = "";
+      const p = document.getElementById("custPhone"); if (p) p.value = "";
+      const a = document.getElementById("custAddress"); if (a) a.value = "";
     };
 
     // Mark sold-out cards/list-items after every render
