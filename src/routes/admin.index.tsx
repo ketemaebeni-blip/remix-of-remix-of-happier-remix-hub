@@ -429,6 +429,8 @@ function AdminDashboard() {
             </section>
           </>
         )}
+
+        {section === "settings" && <SettingsPanel />}
       </main>
 
       {editing && (
