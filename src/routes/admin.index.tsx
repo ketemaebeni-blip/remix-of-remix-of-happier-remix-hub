@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Cake, LayoutGrid, ShoppingBag, LogOut, Store,
-  Boxes, CheckCircle2, XCircle, Tag, Plus, Pencil, Trash2, Upload, X,
+  Boxes, CheckCircle2, XCircle, Tag, Plus, Pencil, Trash2, Upload, X, Settings as SettingsIcon, Mail, Lock,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import "@/components/sweet-bloom/menu-admin.css";
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/admin/")({
 const fmtBirr = (n: number) =>
   `Birr ${Number(n).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
 
-type Section = "overview" | "orders" | "menu";
+type Section = "overview" | "orders" | "menu" | "settings";
 
 type ShopItem = {
   id: string;
@@ -171,6 +171,7 @@ function AdminDashboard() {
     { id: "overview", label: "Overview", icon: LayoutGrid },
     { id: "orders", label: "Orders", icon: ShoppingBag },
     { id: "menu", label: "Shop Items", icon: Tag },
+    { id: "settings", label: "Settings", icon: SettingsIcon },
   ];
 
   return (
