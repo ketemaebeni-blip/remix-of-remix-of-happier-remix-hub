@@ -621,3 +621,92 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </label>
   );
 }
+
+function SettingsPanel() {
+  const [email, setEmail] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [currentPw, setCurrentPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
+  const [emailBusy, setEmailBusy] = useState(false);
+  const [pwBusy, setPwBusy] = useState(false);
+  const [emailMsg, setEmailMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const e = data.user?.email ?? "";
+      setEmail(e);
+      setNewEmail(e);
+    });
+  }, []);
+
+  async function changeEmail(e: React.FormEvent) {
+    e.preventDefault();
+    setEmailMsg(null);
+    if (!newEmail.trim() || newEmail.trim().toLowerCase() === email.toLowerCase()) {
+      setEmailMsg({ ok: false, text: "Enter a different email address." });
+      return;
+    }
+    setEmailBusy(true);
+    const { error } = await supabase.auth.updateUser({ email: newEmail.trim() });
+    setEmailBusy(false);
+    if (error) { setEmailMsg({ ok: false, text: error.message }); return; }
+    setEmailMsg({ ok: true, text: "Check your new inbox to confirm the change. Your sign-in email updates once you click the link." });
+  }
+
+  async function changePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setPwMsg(null);
+    if (newPw.length < 6) { setPwMsg({ ok: false, text: "New password must be at least 6 characters." }); return; }
+    if (newPw !== confirmPw) { setPwMsg({ ok: false, text: "Passwords do not match." }); return; }
+    setPwBusy(true);
+    const { error: verifyErr } = await supabase.auth.signInWithPassword({ email, password: currentPw });
+    if (verifyErr) { setPwBusy(false); setPwMsg({ ok: false, text: "Current password is incorrect." }); return; }
+    const { error: updErr } = await supabase.auth.updateUser({ password: newPw });
+    setPwBusy(false);
+    if (updErr) { setPwMsg({ ok: false, text: updErr.message }); return; }
+    setCurrentPw(""); setNewPw(""); setConfirmPw("");
+    setPwMsg({ ok: true, text: "Password updated successfully." });
+  }
+
+  return (
+    <>
+      <h1 className="ma-page-title">Settings</h1>
+      <p className="ma-page-sub">Update the manager account email and password.</p>
+
+      <section className="ma-card" style={{ marginBottom: 18 }}>
+        <div className="ma-card-head"><h2><Mail size={18} style={{ verticalAlign: -3, marginRight: 6 }} /> Change Email</h2></div>
+        <form onSubmit={changeEmail} style={{ padding: 18, display: "grid", gap: 12, maxWidth: 460 }}>
+          <Field label="Current email"><input value={email} disabled style={{ ...inp, background: "#f5efe8", color: "#9a8b7c" }} /></Field>
+          <Field label="New email"><input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} style={inp} required /></Field>
+          {emailMsg && (
+            <div style={{ padding: "10px 12px", borderRadius: 10, fontSize: 13,
+              background: emailMsg.ok ? "#dcfce7" : "#fee2e2",
+              color: emailMsg.ok ? "#047857" : "#b91c1c" }}>{emailMsg.text}</div>
+          )}
+          <button type="submit" className="ma-add-btn" disabled={emailBusy} style={{ justifySelf: "start" }}>
+            {emailBusy ? "Saving…" : "Update Email"}
+          </button>
+        </form>
+      </section>
+
+      <section className="ma-card">
+        <div className="ma-card-head"><h2><Lock size={18} style={{ verticalAlign: -3, marginRight: 6 }} /> Change Password</h2></div>
+        <form onSubmit={changePassword} style={{ padding: 18, display: "grid", gap: 12, maxWidth: 460 }}>
+          <Field label="Current password"><input type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} style={inp} required autoComplete="current-password" /></Field>
+          <Field label="New password"><input type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} style={inp} required minLength={6} autoComplete="new-password" /></Field>
+          <Field label="Confirm new password"><input type="password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} style={inp} required minLength={6} autoComplete="new-password" /></Field>
+          {pwMsg && (
+            <div style={{ padding: "10px 12px", borderRadius: 10, fontSize: 13,
+              background: pwMsg.ok ? "#dcfce7" : "#fee2e2",
+              color: pwMsg.ok ? "#047857" : "#b91c1c" }}>{pwMsg.text}</div>
+          )}
+          <button type="submit" className="ma-add-btn" disabled={pwBusy} style={{ justifySelf: "start" }}>
+            {pwBusy ? "Updating…" : "Update Password"}
+          </button>
+        </form>
+      </section>
+    </>
+  );
+}
