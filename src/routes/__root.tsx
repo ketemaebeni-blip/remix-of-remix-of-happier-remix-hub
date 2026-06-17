@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "selam cake shop" },
+      { name: "description", content: "A web application for remixing and sharing creative projects, built with TypeScript and React." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "selam cake shop" },
+      { property: "og:description", content: "A web application for remixing and sharing creative projects, built with TypeScript and React." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "selam cake shop" },
+      { name: "twitter:description", content: "A web application for remixing and sharing creative projects, built with TypeScript and React." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7ac9498d-e5a7-47cf-9ec0-2e605151ed93/id-preview-ad19003c--f360bbc4-c6e9-4bab-b36b-48fa0734646b.lovable.app-1781085930552.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7ac9498d-e5a7-47cf-9ec0-2e605151ed93/id-preview-ad19003c--f360bbc4-c6e9-4bab-b36b-48fa0734646b.lovable.app-1781085930552.png" },
     ],
     links: [
       {
